@@ -1,0 +1,16 @@
+# Бесполезные агенты
+*opencode*
+*AGENTS*
+
+# Секреты
+.env
+
+# Rust
+/target
+
+# Стек
+grafana-data/
+prometheus-data/
+
+# Логи
+*.log
