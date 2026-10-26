@@ -8,13 +8,20 @@ use tower::ServiceExt;
 use items_service::config::Config;
 use items_service::routes::{router, AppState};
 
-fn app() -> Router {
-    let config = Config {
+fn test_config() -> Config {
+    Config {
         port: 8080,
         pod_id: "pod-test".to_owned(),
         datacenter: "dc-test".to_owned(),
         fail_every_n: 0,
-    };
+    }
+}
+
+fn app() -> Router {
+    app_with(test_config())
+}
+
+fn app_with(config: Config) -> Router {
     router(AppState::new(config).expect("состояние приложения"))
 }
 
@@ -173,13 +180,13 @@ async fn metrics_expose_counter_and_histogram_with_labels() {
 
     let text = metrics_text(app).await;
 
-    assert!(text.contains("http_requests_total{"), "{text}");
+    assert!(text.contains("total_requests{"), "{text}");
     assert!(text.contains(r#"handler="/items""#), "{text}");
     assert!(text.contains(r#"code="201""#), "{text}");
     assert!(text.contains(r#"pod="pod-test""#), "{text}");
     assert!(text.contains(r#"dc="dc-test""#), "{text}");
     assert!(
-        text.contains("http_request_duration_seconds_bucket{"),
+        text.contains("request_duration_seconds_bucket{"),
         "{text}"
     );
 }
@@ -222,4 +229,81 @@ async fn service_routes_are_absent_from_metrics() {
 
     assert!(!text.contains(r#"handler="/health""#), "{text}");
     assert!(!text.contains(r#"handler="/metrics""#), "{text}");
+    assert!(!text.contains(r#"handler="/handlers""#), "{text}");
+}
+
+#[tokio::test]
+async fn handlers_list_reports_business_routes() {
+    let request = Request::builder()
+        .uri("/handlers")
+        .body(Body::empty())
+        .expect("запрос собран корректно");
+
+    let response = app().oneshot(request).await.expect("запрос обработан");
+
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body = json_body(response).await;
+    let handlers: Vec<String> = body["handlers"]
+        .as_array()
+        .expect("список ручек")
+        .iter()
+        .map(|handler| {
+            format!(
+                "{} {}",
+                handler["method"].as_str().expect("method — строка"),
+                handler["path"].as_str().expect("path — строка")
+            )
+        })
+        .collect();
+
+    assert_eq!(
+        handlers,
+        vec!["POST /items", "GET /items/{id}", "PUT /items/{id}"]
+    );
+}
+
+#[tokio::test]
+async fn every_nth_request_fails_with_500_and_is_measured() {
+    let app = app_with(Config {
+        fail_every_n: 2,
+        ..test_config()
+    });
+
+    let first = create_item(app.clone(), "a", 1).await;
+    assert_eq!(first["name"], "a");
+
+    let second = app
+        .clone()
+        .oneshot(json_request(
+            "POST",
+            "/items",
+            r#"{"name":"b","quantity":2}"#,
+        ))
+        .await
+        .expect("запрос обработан");
+
+    assert_eq!(second.status(), StatusCode::INTERNAL_SERVER_ERROR);
+    assert_eq!(
+        json_body(second).await["error"],
+        "смоделированный сбой сервиса"
+    );
+
+    let text = metrics_text(app).await;
+
+    assert!(text.contains(r#"code="500""#), "{text}");
+    assert!(text.contains(r#"code="201""#), "{text}");
+}
+
+#[tokio::test]
+async fn fault_injection_is_disabled_when_every_n_is_zero() {
+    let app = app();
+
+    for index in 0..5 {
+        create_item(app.clone(), &format!("item-{index}"), index).await;
+    }
+
+    let text = metrics_text(app).await;
+
+    assert!(!text.contains(r#"code="500""#), "{text}");
 }

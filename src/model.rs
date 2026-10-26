@@ -15,7 +15,7 @@ pub struct CreateItemRequest {
     pub quantity: u64,
 }
 
-/// Тело `PUT /items/{id}` — полная замена полей записи.
+/// Тело `PUT /items/{id}`
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub struct UpdateItemRequest {
     pub name: String,
