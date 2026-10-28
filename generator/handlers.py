@@ -5,7 +5,7 @@ from config import GeneratorError
 
 
 def collect_handlers(clients: list[HttpClient], attempts: int) -> list[dict[str, str]]:
-    """методы в виде пары (method, path)."""
+    """методы в виде пары (method, path)"""
     merged: dict[tuple[str, str], dict[str, str]] = {}
     for client in clients:
         payload = client.get_json("/handlers", attempts=attempts)

@@ -28,7 +28,7 @@ class PanelSpec:
 
 
 def panel_specs(method: str | None, handler: str | None) -> list[PanelSpec]:
-    """Три панели: задержка, запросы и ошибки"""
+    """три панели: задержка, запросы и ошибки"""
     suffix = "" if handler is None else f": {method} {handler}"
     return [
         PanelSpec(
@@ -137,7 +137,7 @@ def _variables() -> list[dict]:
 
 
 def build_dashboard(handlers: list[dict[str, str]]) -> dict:
-    """Группа панелей на каждый маршрут"""
+    """группа панелей на каждый маршрут"""
     groups = [("Обзор: все ручки", None, None)] + [
         (f"{h['method']} {h['path']} — {h['description']}", h["method"], h["path"])
         for h in handlers

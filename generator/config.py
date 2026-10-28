@@ -7,7 +7,6 @@ from dataclasses import dataclass
 DEFAULT_APP_URLS = "http://app-dc1:8080"
 DEFAULT_GRAFANA_URL = "http://grafana:3000"
 DEFAULT_GRAFANA_USER = "admin"
-DEFAULT_MODE = "file"
 DEFAULT_DASHBOARD_FILE = "/var/lib/grafana/dashboards/app-handlers.json"
 DEFAULT_TIMEOUT_SECONDS = 5.0
 DEFAULT_RETRIES = 60
@@ -30,7 +29,6 @@ class Settings:
     grafana_url: str
     grafana_user: str
     grafana_password: str
-    mode: str
     dashboard_file: str
     timeout: float
     retries: int
@@ -41,10 +39,6 @@ class Settings:
         app_urls = tuple(url.strip().rstrip("/") for url in raw_urls if url.strip())
         if not app_urls:
             raise GeneratorError("список адресов приложения пуст")
-
-        mode = _pick(args.mode, "DASHBOARD_MODE", DEFAULT_MODE).strip().lower()
-        if mode not in {"api", "file"}:
-            raise GeneratorError(f"режим должен быть api или file, получено {mode!r}")
 
         # Пароль — только из env: аргумент попал бы в историю оболочки и в ps.
         password = os.environ.get("GRAFANA_ADMIN_PASSWORD")
@@ -58,7 +52,6 @@ class Settings:
             grafana_url=_pick(args.grafana_url, "GRAFANA_URL", DEFAULT_GRAFANA_URL).rstrip("/"),
             grafana_user=os.environ.get("GRAFANA_ADMIN_USER", DEFAULT_GRAFANA_USER),
             grafana_password=password,
-            mode=mode,
             dashboard_file=_pick(args.dashboard_file, "DASHBOARD_FILE", DEFAULT_DASHBOARD_FILE),
             timeout=_pick(args.timeout, "HTTP_TIMEOUT_SECONDS", DEFAULT_TIMEOUT_SECONDS, float),
             retries=_pick(args.retries, "HTTP_RETRIES", DEFAULT_RETRIES, int),
@@ -78,11 +71,6 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--grafana-url", metavar="URL", help="адрес Grafana (env: GRAFANA_URL)"
-    )
-    parser.add_argument(
-        "--mode",
-        choices=("api", "file"),
-        help="способ доставки дашборда в Grafana (env: DASHBOARD_MODE)",
     )
     parser.add_argument(
         "--dashboard-file",

@@ -8,14 +8,13 @@ import sys
 from client import HttpClient
 from config import GeneratorError, Settings, parse_args
 from dashboard import build_dashboard
-from grafana import publish_api, publish_file, verify
+from grafana import publish_file, verify
 from handlers import collect_handlers
 
 
 def main() -> int:
     settings = Settings.resolve(parse_args())
     print(
-        f"Режим: {settings.mode}; приложение: {', '.join(settings.app_urls)}; "
         f"Grafana: {settings.grafana_url}",
         flush=True,
     )
@@ -36,10 +35,8 @@ def main() -> int:
     dashboard = build_dashboard(handlers)
 
     grafana = HttpClient(settings.grafana_url, timeout=settings.timeout, auth=admin_auth)
-    if settings.mode == "api":
-        publish_api(grafana, dashboard)
-    else:
-        publish_file(grafana, dashboard, settings)
+
+    publish_file(grafana, dashboard, settings)
 
     # на всякий случай
     verify(grafana, settings)

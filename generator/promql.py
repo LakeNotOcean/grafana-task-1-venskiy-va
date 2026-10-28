@@ -1,4 +1,4 @@
-"""Шаблоны PromQL-запросов."""
+"""Шаблоны PromQL-запросов"""
 
 REQUESTS_METRIC = "total_requests"
 LATENCY_BUCKETS = "request_duration_seconds_bucket"
