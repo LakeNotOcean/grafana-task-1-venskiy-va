@@ -1,7 +1,7 @@
 """Шаблоны PromQL-запросов"""
 
-REQUESTS_METRIC = "total_requests"
-LATENCY_BUCKETS = "request_duration_seconds_bucket"
+REQUESTS_METRIC = "http_requests_total"
+LATENCY_BUCKETS = "http_request_duration_seconds_bucket"
 RATE_WINDOW = "$__rate_interval"
 
 
