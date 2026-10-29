@@ -1,0 +1,19 @@
+.env
+
+# артефакты
+.git
+target
+grafana-data
+prometheus-data
+*.log
+
+# не нужно
+docs
+generator
+loadtest
+prometheus
+grafana
+*.md
+docker-compose.yml
+Dockerfile
+.dockerignore

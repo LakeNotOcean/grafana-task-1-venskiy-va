@@ -138,8 +138,8 @@ def _variables() -> list[dict]:
 
 def build_dashboard(handlers: list[dict[str, str]]) -> dict:
     """группа панелей на каждый маршрут"""
-    groups = [("Обзор: все ручки", None, None)] + [
-        (f"{h['method']} {h['path']} — {h['description']}", h["method"], h["path"])
+    groups = [("All Routes", None, None)] + [
+        (f"{h['method']} {h['path']}. {h['description']}", h["method"], h["path"])
         for h in handlers
     ]
 
@@ -154,7 +154,7 @@ def build_dashboard(handlers: list[dict[str, str]]) -> dict:
     return {
         "uid": DASHBOARD_UID,
         "title": DASHBOARD_TITLE,
-        "tags": ["hw1", "items-service", "generated"],
+        "tags": ["items-service", "generated"],
         "timezone": "browser",
         "editable": False,
         "graphTooltip": 1,

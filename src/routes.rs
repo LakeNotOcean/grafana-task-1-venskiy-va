@@ -25,17 +25,17 @@ pub const HANDLERS: &[HandlerInfo] = &[
     HandlerInfo {
         method: "POST",
         path: "/items",
-        description: "создать запись",
+        description: "create",
     },
     HandlerInfo {
         method: "GET",
         path: "/items/{id}",
-        description: "получить запись",
+        description: "get",
     },
     HandlerInfo {
         method: "PUT",
         path: "/items/{id}",
-        description: "обновить запись",
+        description: "get",
     },
 ];
 
@@ -50,8 +50,7 @@ pub struct AppState {
 }
 
 impl AppState {
-    /// Ошибка возможна, только если имя метрики или лейбла некорректно,
-    /// то есть это ошибка разработки, а не рантайма.
+    /// инициализируем состояние приложения с метриками
     pub fn new(config: Config) -> Result<Self, prometheus::Error> {
         let metrics = Metrics::new(&config.pod_id, &config.datacenter)?;
 

@@ -40,7 +40,7 @@ def verify(client: HttpClient, settings: Settings) -> None:
     dashboard = payload.get("dashboard", {})
     meta = payload.get("meta", {})
     print(
-        "  проверка: "
+        "проверка: "
         f"uid={dashboard.get('uid')!r} title={dashboard.get('title')!r} "
         f"panels={len(dashboard.get('panels', []))} "
         f"editable={dashboard.get('editable')} provisioned={meta.get('provisioned')} "

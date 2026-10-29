@@ -1,0 +1,105 @@
+name: grafana-hw1
+
+services:
+  # пара подов в двух датацентрах
+  app-dc1:
+    build: .
+    image: items-service:dc1
+    environment:
+      PORT: "8080"
+      POD_ID: pod-1
+      DATACENTER: dc1
+      FAIL_EVERY_N: ${FAIL_EVERY_N:-50}
+    ports:
+      - "8081:8080"
+    restart: unless-stopped
+
+  app-dc2:
+    build: .
+    image: items-service:dc2
+    environment:
+      PORT: "8080"
+      POD_ID: pod-2
+      DATACENTER: dc2
+      FAIL_EVERY_N: ${FAIL_EVERY_N:-50}
+    ports:
+      - "8082:8080"
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.15.1
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=2h
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - app-dc1
+      - app-dc2
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana-oss:12.4.3
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?скопируйте .env.example в .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana-dashboards:/var/lib/grafana/dashboards
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 20s
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  # скрипт для генерации, запускается один раз
+  dashboard-generator:
+    build: ./generator
+    environment:
+      APP_URLS: "http://app-dc1:8080,http://app-dc2:8080"
+      GRAFANA_URL: "http://grafana:3000"
+      GRAFANA_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GRAFANA_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?скопируйте .env.example в .env}
+      DASHBOARD_FILE: /var/lib/grafana/dashboards/app-handlers.json
+    volumes:
+      - grafana-dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      app-dc1:
+        condition: service_healthy
+      app-dc2:
+        condition: service_healthy
+      grafana:
+        condition: service_healthy
+    restart: "no"
+
+  # нагрузка когда все запуститься и сгенерируется
+  load-generator:
+    image: grafana/k6:2.3.0
+    command: run /home/k6/script.js
+    environment:
+      BASE_URLS: "http://app-dc1:8080,http://app-dc2:8080"
+      TARGET_RPS: "36"
+      RAMP_MINUTES: "3"
+      HOLD_HOURS: "12"
+    volumes:
+      - ./loadtest:/home/k6:ro
+    depends_on:
+      app-dc1:
+        condition: service_healthy
+      app-dc2:
+        condition: service_healthy
+      dashboard-generator:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+volumes:
+  grafana-dashboards:
