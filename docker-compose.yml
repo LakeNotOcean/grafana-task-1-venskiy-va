@@ -1,7 +1,7 @@
 name: grafana-hw1
 
 services:
-  # пара подов в двух датацентрах
+  # пара подов в двух дата-центрах
   app-dc1:
     build: .
     image: items-service:dc1

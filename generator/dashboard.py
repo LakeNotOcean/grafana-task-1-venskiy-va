@@ -131,8 +131,8 @@ def _query_var(name: str, label: str, query: str) -> dict:
 def _variables() -> list[dict]:
     """селекторы dc и pod"""
     return [
-        _query_var("dc", "Датацентр", f"label_values({REQUESTS_METRIC}, dc)"),
-        _query_var("pod", "Под", f'label_values({REQUESTS_METRIC}{{dc=~"$dc"}}, pod)'),
+        _query_var("dc", "Datacenter", f"label_values({REQUESTS_METRIC}, dc)"),
+        _query_var("pod", "Pod", f'label_values({REQUESTS_METRIC}{{dc=~"$dc"}}, pod)'),
     ]
 
 
