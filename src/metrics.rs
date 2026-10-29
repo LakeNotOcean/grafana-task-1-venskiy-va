@@ -12,8 +12,8 @@ pub const LATENCY_BUCKETS: [f64; 15] = [
     0.0001, 0.00025, 0.0005, 0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0,
 ];
 
-pub const METRIC_LATENCY: &str = "request_duration_seconds";
-pub const METRIC_REQUESTS: &str = "total_requests";
+pub const METRIC_LATENCY: &str = "http_request_duration_seconds";
+pub const METRIC_REQUESTS: &str = "http_requests_total";
 
 pub const LABEL_METHOD: &str = "method";
 pub const LABEL_HANDLER: &str = "handler";
@@ -37,7 +37,7 @@ impl Metrics {
     /// let metrics = items_service::metrics::Metrics::new("pod-1", "dc1").unwrap();
     /// metrics.observe("GET", "/items/{id}", 200, 0.01);
     /// let text = String::from_utf8(metrics.encode().unwrap()).unwrap();
-    /// assert!(text.contains("total_requests"));
+    /// assert!(text.contains("http_requests_total"));
     /// ```
     pub fn new(pod_id: &str, datacenter: &str) -> Result<Self, prometheus::Error> {
         let const_labels = HashMap::from([
@@ -124,15 +124,15 @@ mod tests {
         let text = exported_text();
 
         assert!(
-            text.contains("request_duration_seconds_bucket{"),
+            text.contains("http_request_duration_seconds_bucket{"),
             "{text}"
         );
         assert!(text.contains(r#"le="0.025""#), "{text}");
         assert!(text.contains(r#"le="0.0005""#), "{text}");
         assert!(text.contains(r#"le="0.0001""#), "{text}");
-        assert!(text.contains("request_duration_seconds_sum"), "{text}");
+        assert!(text.contains("http_request_duration_seconds_sum"), "{text}");
         assert!(
-            text.contains("request_duration_seconds_count"),
+            text.contains("http_request_duration_seconds_count"),
             "{text}"
         );
     }

@@ -180,13 +180,13 @@ async fn metrics_expose_counter_and_histogram_with_labels() {
 
     let text = metrics_text(app).await;
 
-    assert!(text.contains("total_requests{"), "{text}");
+    assert!(text.contains("http_requests_total{"), "{text}");
     assert!(text.contains(r#"handler="/items""#), "{text}");
     assert!(text.contains(r#"code="201""#), "{text}");
     assert!(text.contains(r#"pod="pod-test""#), "{text}");
     assert!(text.contains(r#"dc="dc-test""#), "{text}");
     assert!(
-        text.contains("request_duration_seconds_bucket{"),
+        text.contains("http_request_duration_seconds_bucket{"),
         "{text}"
     );
 }

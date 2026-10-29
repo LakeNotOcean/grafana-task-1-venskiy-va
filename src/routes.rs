@@ -25,17 +25,17 @@ pub const HANDLERS: &[HandlerInfo] = &[
     HandlerInfo {
         method: "POST",
         path: "/items",
-        description: "create",
+        description: "Create item",
     },
     HandlerInfo {
         method: "GET",
         path: "/items/{id}",
-        description: "get",
+        description: "Get item",
     },
     HandlerInfo {
         method: "PUT",
         path: "/items/{id}",
-        description: "get",
+        description: "Update item",
     },
 ];
 

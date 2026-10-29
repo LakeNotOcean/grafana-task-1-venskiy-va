@@ -81,7 +81,7 @@ services:
         condition: service_healthy
     restart: "no"
 
-  # нагрузка когда все запуститься и сгенерируется
+  # нагрузка когда все запустится и сгенерируется
   load-generator:
     image: grafana/k6:2.3.0
     command: run /home/k6/script.js
