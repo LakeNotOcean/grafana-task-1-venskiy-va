@@ -47,5 +47,5 @@ if __name__ == "__main__":
     try:
         sys.exit(main())
     except GeneratorError as error:
-        print(f"ОШИБКА: {error}", file=sys.stderr, flush=True)
+        print(f"Ошибка: {error}", file=sys.stderr, flush=True)
         sys.exit(1)
