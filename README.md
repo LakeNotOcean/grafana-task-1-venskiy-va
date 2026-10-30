@@ -36,7 +36,7 @@ docker compose up
 | `8081` | `app-dc1` (внутри сети - `8080`) |
 | `8082` | `app-dc2` (внутри сети - `8080`) |
 
-- Бизнес-маршруты: `POST /items` (201), `GET /items/{id}` (200 / 404), `PUT /items/{id}` (200 / 404).
+- Основные маршруты: `POST /items` (201), `GET /items/{id}` (200 / 404), `PUT /items/{id}` (200 / 404).
 - Служебные: `GET /health`, `GET /metrics`, `GET /handlers`.
 
 ## Метрики и метки
